@@ -1,8 +1,6 @@
-import { unlink } from "fs/promises";
-import { join } from "path";
 import { requireAdmin } from "@/lib/auth";
 import { allowedStatuses, deleteRecord, isRecordKind, patchRecord } from "@/lib/db";
-import { UPLOADS_DIR, uploadNameFromPath } from "@/lib/uploads";
+import { deleteUpload, uploadNameFromPath } from "@/lib/uploads";
 
 export async function PATCH(request: Request, ctx: RouteContext<"/api/admin/records/[kind]/[id]">) {
   const auth = await requireAdmin(request, "records:write");
@@ -46,7 +44,7 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/admin/rec
     const r = removed as { cvPath?: string; photoPath?: string };
     for (const p of [r.cvPath, r.photoPath]) {
       const name = p ? uploadNameFromPath(p) : null;
-      if (name) await unlink(join(UPLOADS_DIR, name)).catch(() => undefined);
+      if (name) await deleteUpload(name).catch(() => undefined);
     }
   }
   return Response.json({ success: true });

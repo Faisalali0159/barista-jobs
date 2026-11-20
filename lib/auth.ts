@@ -7,9 +7,7 @@ import {
   timingSafeEqual,
 } from "crypto";
 import { promisify } from "util";
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { DATA_DIR } from "./store";
+import { db, kvGet } from "./pg";
 import { findUserById, type AdminUser, type Role } from "./users";
 
 const scrypt = promisify(scryptCb) as (
@@ -55,18 +53,17 @@ async function getSecret(): Promise<Buffer> {
     cachedSecret = Buffer.from(process.env.SESSION_SECRET);
     return cachedSecret;
   }
-  const file = join(DATA_DIR, ".session-secret");
-  try {
-    cachedSecret = Buffer.from((await readFile(file, "utf-8")).trim(), "hex");
-    if (cachedSecret.length >= 32) return cachedSecret;
-  } catch {
-    // fall through and generate
+  // Persisted in Postgres so every server instance shares the same secret.
+  const existing = await kvGet<string | null>("session-secret", null);
+  if (!existing) {
+    await (await db()).query(
+      "INSERT INTO kv (key, value) VALUES ('session-secret', $1) ON CONFLICT (key) DO NOTHING",
+      [JSON.stringify(randomBytes(48).toString("hex"))]
+    );
   }
-  await mkdir(DATA_DIR, { recursive: true });
-  const fresh = randomBytes(48);
-  await writeFile(file, fresh.toString("hex"), { mode: 0o600 });
-  cachedSecret = fresh;
-  return fresh;
+  const stored = (await kvGet<string | null>("session-secret", null)) as string;
+  cachedSecret = Buffer.from(stored, "hex");
+  return cachedSecret;
 }
 
 async function sign(payload: string): Promise<string> {

@@ -1,9 +1,7 @@
 import { addJobSeeker, getJobSeekers } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { getSiteContentFresh } from "@/lib/content";
-import { MAX_UPLOAD_BYTES, UPLOADS_DIR, extensionFor, uploadUrl } from "@/lib/uploads";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { MAX_UPLOAD_BYTES, extensionFor, putUpload, uploadUrl } from "@/lib/uploads";
 
 const clip = (v: FormDataEntryValue | null, max: number) =>
   typeof v === "string" ? v.trim().slice(0, max) : "";
@@ -49,9 +47,8 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
-      await mkdir(UPLOADS_DIR, { recursive: true });
       const filename = `${field}-${id}.${ext}`;
-      await writeFile(join(UPLOADS_DIR, filename), new Uint8Array(await file.arrayBuffer()));
+      await putUpload(filename, new Uint8Array(await file.arrayBuffer()));
       return uploadUrl(filename);
     }
 

@@ -1,9 +1,7 @@
-import { join } from "path";
-import { DATA_DIR } from "./store";
+import { db } from "./pg";
 
-// Uploads live outside /public so they are only reachable through the authenticated
+// Uploads are stored in Postgres and only reachable through the authenticated
 // /api/admin/files/[name] route.
-export const UPLOADS_DIR = join(DATA_DIR, "uploads");
 
 const ALLOWED: Record<string, string> = {
   pdf: "application/pdf",
@@ -41,4 +39,20 @@ export function uploadUrl(name: string): string {
 export function uploadNameFromPath(p: string): string | null {
   const name = p.split("/").pop() ?? "";
   return isSafeUploadName(name) ? name : null;
+}
+
+export async function putUpload(name: string, data: Uint8Array): Promise<void> {
+  await (await db()).query(
+    "INSERT INTO uploads (name, mime, data) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET data = EXCLUDED.data, mime = EXCLUDED.mime",
+    [name, mimeFor(name), Buffer.from(data)]
+  );
+}
+
+export async function getUpload(name: string): Promise<{ mime: string; data: Buffer } | null> {
+  const { rows } = await (await db()).query("SELECT mime, data FROM uploads WHERE name = $1", [name]);
+  return rows.length ? { mime: rows[0].mime, data: rows[0].data } : null;
+}
+
+export async function deleteUpload(name: string): Promise<void> {
+  await (await db()).query("DELETE FROM uploads WHERE name = $1", [name]);
 }
