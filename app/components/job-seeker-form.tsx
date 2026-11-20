@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { SiteContent } from "@/lib/content-types";
 
-export default function JobSeekerForm() {
+export default function JobSeekerForm({ options, open }: { options: SiteContent["forms"]; open: boolean }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -79,7 +80,12 @@ export default function JobSeekerForm() {
           </div>
 
           <div className="bg-[var(--gray-50)] rounded-2xl p-6 sm:p-8 border border-[var(--gray-100)]">
-            {status === "success" ? (
+            {!open ? (
+              <div className="text-center py-12">
+                <h3 className="text-xl font-bold text-navy mb-2">Applications are closed</h3>
+                <p className="text-[var(--gray-500)]">We are not accepting new applications right now. Please check back soon or contact us on WhatsApp.</p>
+              </div>
+            ) : status === "success" ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,12 +158,9 @@ export default function JobSeekerForm() {
                     className="w-full px-4 py-3 rounded-xl border border-[var(--gray-200)] bg-white focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-colors"
                   >
                     <option value="">Select a position</option>
-                    <option value="Barista">Barista</option>
-                    <option value="Senior Barista">Senior Barista</option>
-                    <option value="Head Barista">Head Barista</option>
-                    <option value="Barista Trainer">Barista Trainer</option>
-                    <option value="Coffee Shop Manager">Coffee Shop Manager</option>
-                    <option value="Other">Other</option>
+                    {options.positions.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -172,11 +175,9 @@ export default function JobSeekerForm() {
                     className="w-full px-4 py-3 rounded-xl border border-[var(--gray-200)] bg-white focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-colors"
                   >
                     <option value="">Select your experience</option>
-                    <option value="No experience">No experience</option>
-                    <option value="Less than 1 year">Less than 1 year</option>
-                    <option value="1-2 years">1-2 years</option>
-                    <option value="3-5 years">3-5 years</option>
-                    <option value="5+ years">5+ years</option>
+                    {options.experienceLevels.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
                   </select>
                 </div>
 

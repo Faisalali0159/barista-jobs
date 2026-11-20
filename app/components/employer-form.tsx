@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { SiteContent } from "@/lib/content-types";
 
-export default function EmployerForm() {
+export default function EmployerForm({ options, serviceNames, open }: { options: SiteContent["forms"]; serviceNames: string[]; open: boolean }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -13,7 +14,11 @@ export default function EmployerForm() {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+    const services = formData.getAll("services") as string[];
+    const data = {
+      ...Object.fromEntries(formData.entries()),
+      services,
+    };
 
     try {
       const res = await fetch("/api/employers", {
@@ -80,7 +85,12 @@ export default function EmployerForm() {
           </div>
 
           <div className="bg-white rounded-2xl p-6 sm:p-8 order-2 lg:order-2">
-            {status === "success" ? (
+            {!open ? (
+              <div className="text-center py-12">
+                <h3 className="text-xl font-bold text-navy mb-2">Requests are closed</h3>
+                <p className="text-[var(--gray-500)]">We are not taking new staffing requests right now. Please contact us on WhatsApp.</p>
+              </div>
+            ) : status === "success" ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,6 +167,27 @@ export default function EmployerForm() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium text-[var(--gray-700)] mb-2">
+                    Services Needed *
+                  </label>
+                  <div className="space-y-2.5">
+                    {serviceNames.map((service) => (
+                      <label key={service} className="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          name="services"
+                          value={service}
+                          className="w-4.5 h-4.5 rounded border-[var(--gray-300)] text-orange focus:ring-orange/50 accent-[var(--orange)]"
+                        />
+                        <span className="text-sm text-[var(--gray-700)] group-hover:text-navy transition-colors">
+                          {service}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
                   <label htmlFor="emp-type" className="block text-sm font-medium text-[var(--gray-700)] mb-1.5">
                     Staff Type Needed *
                   </label>
@@ -167,12 +198,9 @@ export default function EmployerForm() {
                     className="w-full px-4 py-3 rounded-xl border border-[var(--gray-200)] bg-white focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-colors"
                   >
                     <option value="">Select staff type</option>
-                    <option value="Barista">Barista</option>
-                    <option value="Senior Barista">Senior Barista</option>
-                    <option value="Head Barista">Head Barista</option>
-                    <option value="Barista Trainer">Barista Trainer</option>
-                    <option value="Coffee Shop Manager">Coffee Shop Manager</option>
-                    <option value="Multiple Roles">Multiple Roles</option>
+                    {options.staffTypes.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -201,11 +229,9 @@ export default function EmployerForm() {
                     className="w-full px-4 py-3 rounded-xl border border-[var(--gray-200)] bg-white focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-colors"
                   >
                     <option value="">Select experience level</option>
-                    <option value="No experience needed">No experience needed</option>
-                    <option value="1+ year">1+ year</option>
-                    <option value="2+ years">2+ years</option>
-                    <option value="3+ years">3+ years</option>
-                    <option value="5+ years">5+ years</option>
+                    {options.experienceRequired.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
                   </select>
                 </div>
 

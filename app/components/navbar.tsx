@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
-export default function Navbar() {
+export default function Navbar({ siteName, tagline }: { siteName: string; tagline: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -13,17 +13,17 @@ export default function Navbar() {
           <a href="#" className="flex items-center gap-2">
             <Image
               src="/logo.png"
-              alt="Barista Job's Logo"
+              alt={`${siteName} Logo`}
               width={48}
               height={48}
               className="w-10 h-10 sm:w-12 sm:h-12"
             />
             <div className="flex flex-col">
               <span className="text-lg sm:text-xl font-bold text-navy leading-tight">
-                BARISTA JOB&apos;S
+                {siteName.toUpperCase()}
               </span>
               <span className="text-[10px] sm:text-xs text-orange font-medium leading-tight">
-                Great Barista, Better Business
+                {tagline}
               </span>
             </div>
           </a>

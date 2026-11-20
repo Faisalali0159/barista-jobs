@@ -1,6 +1,8 @@
 import Image from "next/image";
+import type { SiteContent } from "@/lib/content-types";
 
-export default function Hero() {
+export default function Hero({ content }: { content: SiteContent }) {
+  const { hero, siteName } = content;
   return (
     <section className="relative bg-navy min-h-[600px] flex items-center overflow-hidden pt-20">
       <div className="absolute inset-0 opacity-10">
@@ -14,18 +16,17 @@ export default function Hero() {
             <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 mb-6">
               <span className="w-2 h-2 bg-orange rounded-full animate-pulse" />
               <span className="text-sm text-white/80">
-                Now hiring across Somalia
+                {hero.badge}
               </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              Welcome to{" "}
-              <span className="text-orange">Barista Job&apos;s</span>
+              {hero.titleLead}{" "}
+              <span className="text-orange">{hero.titleHighlight}</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-white/80 mb-8 max-w-lg mx-auto lg:mx-0">
-              We provide skilled Baristas, training, and professional services
-              for Coffee Shops, Restaurants, Hotels, and other businesses.
+              {hero.subtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -33,31 +34,26 @@ export default function Hero() {
                 href="#job-seekers"
                 className="inline-flex items-center justify-center px-8 py-4 bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-orange/25 hover:shadow-orange/40 hover:-translate-y-0.5"
               >
-                Looking for a Job?
+                {hero.primaryCta}
               </a>
               <a
                 href="#employers"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all duration-300 border border-white/20"
               >
-                Need Staff?
+                {hero.secondaryCta}
               </a>
             </div>
 
             <div className="mt-10 flex items-center gap-8 justify-center lg:justify-start">
-              <div>
-                <div className="text-2xl font-bold text-orange">500+</div>
-                <div className="text-sm text-white/60">Baristas Placed</div>
-              </div>
-              <div className="w-px h-10 bg-white/20" />
-              <div>
-                <div className="text-2xl font-bold text-orange">100+</div>
-                <div className="text-sm text-white/60">Partner Businesses</div>
-              </div>
-              <div className="w-px h-10 bg-white/20" />
-              <div>
-                <div className="text-2xl font-bold text-orange">6</div>
-                <div className="text-sm text-white/60">Expert Services</div>
-              </div>
+              {hero.stats.map((stat, i) => (
+                <div
+                  key={i}
+                  className={i > 0 ? "border-l border-white/20 pl-8" : undefined}
+                >
+                  <div className="text-2xl font-bold text-orange">{stat.value}</div>
+                  <div className="text-sm text-white/60">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -66,7 +62,7 @@ export default function Hero() {
               <div className="w-80 h-80 bg-gradient-to-br from-orange/20 to-orange/5 rounded-full flex items-center justify-center">
                 <Image
                   src="/logo.png"
-                  alt="Barista Job's"
+                  alt={siteName}
                   width={280}
                   height={280}
                   className="w-64 h-64 object-contain drop-shadow-2xl"
