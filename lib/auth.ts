@@ -199,7 +199,7 @@ export function clearFailures(key: string): void {
   attempts.delete(key);
 }
 
-export function clientKey(request: Request, email: string): string {
+export function clientKey(request: Request, username: string): string {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  return `${ip}|${email.toLowerCase()}`;
+  return `${ip}|${username.toLowerCase()}`;
 }

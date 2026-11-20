@@ -10,7 +10,7 @@ async function Gate({ children }: { children: React.ReactNode }) {
     redirect((await hasAnyUser()) ? "/admin/login" : "/admin/setup");
   }
   return (
-    <AdminFrame user={{ id: user.id, name: user.name, email: user.email, role: user.role }}>
+    <AdminFrame user={{ id: user.id, name: user.name, username: user.username, role: user.role }}>
       {children}
     </AdminFrame>
   );

@@ -24,7 +24,7 @@ export default function SetupForm({ needsKey }: { needsKey: boolean }) {
         method: "POST",
         body: JSON.stringify({
           name: fd.get("name"),
-          email: fd.get("email"),
+          username: fd.get("username"),
           password: fd.get("password"),
           setupKey: fd.get("setupKey") || undefined,
         }),
@@ -52,8 +52,8 @@ export default function SetupForm({ needsKey }: { needsKey: boolean }) {
           <Field label="Full name">
             <input name="name" required className={inputCls} />
           </Field>
-          <Field label="Email">
-            <input name="email" type="email" required autoComplete="username" className={inputCls} />
+          <Field label="Username" hint="3-32 letters, numbers, dots, dashes or underscores">
+            <input name="username" required minLength={3} maxLength={32} autoCapitalize="none" autoComplete="username" className={inputCls} />
           </Field>
           <Field label="Password" hint="At least 8 characters">
             <input name="password" type="password" required minLength={8} autoComplete="new-password" className={inputCls} />

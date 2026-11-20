@@ -29,10 +29,17 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS records_kind_created_idx ON records (kind, created_at DESC)`,
   `CREATE TABLE IF NOT EXISTS admin_users (
      id text PRIMARY KEY,
-     email text NOT NULL UNIQUE,
+     email text UNIQUE,
      data jsonb NOT NULL,
      created_at timestamptz NOT NULL DEFAULT now()
    )`,
+  `ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS username text`,
+  `ALTER TABLE admin_users ALTER COLUMN email DROP NOT NULL`,
+  // Accounts created before usernames existed: derive one from the email's local part.
+  `UPDATE admin_users SET username = lower(split_part(email, '@', 1)),
+     data = jsonb_set(data, '{username}', to_jsonb(lower(split_part(email, '@', 1))))
+   WHERE username IS NULL AND email IS NOT NULL`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS admin_users_username_idx ON admin_users (username)`,
   `CREATE TABLE IF NOT EXISTS kv (key text PRIMARY KEY, value jsonb NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS uploads (
      name text PRIMARY KEY,
@@ -72,11 +79,11 @@ async function init(): Promise<void> {
 
   const users = await p.query("SELECT 1 FROM admin_users LIMIT 1");
   if (!users.rows.length) {
-    const legacy = await readLegacy<Array<{ id: string; email: string; createdAt?: string }>>("admin-users.json");
+    const legacy = await readLegacy<Array<{ id: string; username?: string; email?: string; createdAt?: string }>>("admin-users.json");
     for (const u of legacy ?? []) {
       await p.query(
-        "INSERT INTO admin_users (id, email, data, created_at) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING",
-        [u.id, u.email, JSON.stringify(u), u.createdAt ?? new Date().toISOString()]
+        "INSERT INTO admin_users (id, username, data, created_at) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING",
+        [u.id, u.username ?? (u.email ?? u.id).split("@")[0].toLowerCase(), JSON.stringify(u), u.createdAt ?? new Date().toISOString()]
       );
     }
   }

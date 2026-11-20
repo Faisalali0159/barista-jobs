@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 export interface AdminSessionUser {
   id: string;
   name: string;
-  email: string;
+  username: string;
   role: "admin" | "staff";
 }
 

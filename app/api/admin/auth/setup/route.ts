@@ -1,5 +1,5 @@
 import { createSession, hashPassword, validatePassword } from "@/lib/auth";
-import { createUser, hasAnyUser } from "@/lib/users";
+import { USERNAME_RE, createUser, hasAnyUser, normalizeUsername } from "@/lib/users";
 
 /**
  * First-run setup: creates the first admin. Only works while no users exist.
@@ -11,20 +11,20 @@ export async function POST(request: Request) {
   }
   const body = await request.json().catch(() => ({}));
   const name = typeof body.name === "string" ? body.name.trim() : "";
-  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const username = normalizeUsername(body.username);
   const password = body.password;
 
   if (process.env.SETUP_KEY && body.setupKey !== process.env.SETUP_KEY) {
     return Response.json({ error: "Invalid setup key" }, { status: 403 });
   }
-  if (!name || !/^\S+@\S+\.\S+$/.test(email)) {
-    return Response.json({ error: "A name and valid email are required" }, { status: 400 });
+  if (!name || !USERNAME_RE.test(username)) {
+    return Response.json({ error: "A name and a username (3-32 letters, numbers, . _ -) are required" }, { status: 400 });
   }
   const pwError = validatePassword(password);
   if (pwError) return Response.json({ error: pwError }, { status: 400 });
 
   const result = await createUser(
-    { name, email, role: "admin", passwordHash: await hashPassword(password) },
+    { name, username, role: "admin", passwordHash: await hashPassword(password) },
     { onlyIfEmpty: true }
   );
   if (!result.ok) return Response.json({ error: result.error }, { status: 403 });

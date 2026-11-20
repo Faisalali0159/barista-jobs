@@ -18,7 +18,7 @@ export default function LoginForm() {
     try {
       await api("/api/admin/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email: fd.get("email"), password: fd.get("password") }),
+        body: JSON.stringify({ username: fd.get("username"), password: fd.get("password") }),
       });
       router.push("/admin");
       router.refresh();
@@ -38,8 +38,8 @@ export default function LoginForm() {
         </div>
         <form onSubmit={submit} className="space-y-4">
           {error && <Alert kind="error">{error}</Alert>}
-          <Field label="Email">
-            <input name="email" type="email" required autoComplete="username" className={inputCls} />
+          <Field label="Username">
+            <input name="username" required autoCapitalize="none" autoComplete="username" className={inputCls} />
           </Field>
           <Field label="Password">
             <input name="password" type="password" required autoComplete="current-password" className={inputCls} />

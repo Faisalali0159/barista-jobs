@@ -6,7 +6,7 @@ export type Role = "admin" | "staff";
 export interface AdminUser {
   id: string;
   name: string;
-  email: string;
+  username: string;
   role: Role;
   passwordHash: string;
   /** Bumped on password change; invalidates all existing sessions. */
@@ -23,7 +23,7 @@ export function toPublic(u: AdminUser): PublicUser {
   return {
     id: u.id,
     name: u.name,
-    email: u.email,
+    username: u.username,
     role: u.role,
     active: u.active,
     createdAt: u.createdAt,
@@ -56,9 +56,9 @@ function updateUsers<R>(
       for (const u of next) {
         if (before.get(u.id) === u) continue;
         await c.query(
-          `INSERT INTO admin_users (id, email, data, created_at) VALUES ($1, $2, $3, $4)
-           ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, data = EXCLUDED.data`,
-          [u.id, u.email, JSON.stringify(u), u.createdAt]
+          `INSERT INTO admin_users (id, username, data, created_at) VALUES ($1, $2, $3, $4)
+           ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username, data = EXCLUDED.data`,
+          [u.id, u.username, JSON.stringify(u), u.createdAt]
         );
       }
     }
@@ -70,9 +70,15 @@ export async function findUserById(id: string): Promise<AdminUser | null> {
   return (await listUsers()).find((u) => u.id === id) ?? null;
 }
 
-export async function findUserByEmail(email: string): Promise<AdminUser | null> {
-  const e = email.trim().toLowerCase();
-  return (await listUsers()).find((u) => u.email === e) ?? null;
+export const USERNAME_RE = /^[a-z0-9._-]{3,32}$/;
+
+export function normalizeUsername(v: unknown): string {
+  return typeof v === "string" ? v.trim().toLowerCase() : "";
+}
+
+export async function findUserByUsername(username: string): Promise<AdminUser | null> {
+  const u = normalizeUsername(username);
+  return (await listUsers()).find((x) => x.username === u) ?? null;
 }
 
 export async function hasAnyUser(): Promise<boolean> {
@@ -84,21 +90,21 @@ export type MutationResult<T> = { ok: true; value: T } | { ok: false; error: str
 
 /** Creates a user. If `onlyIfEmpty`, fails when any user already exists (first-run setup). */
 export async function createUser(
-  input: { name: string; email: string; role: Role; passwordHash: string },
+  input: { name: string; username: string; role: Role; passwordHash: string },
   opts: { onlyIfEmpty?: boolean } = {}
 ): Promise<MutationResult<AdminUser>> {
   return updateUsers<MutationResult<AdminUser>>((users) => {
     if (opts.onlyIfEmpty && users.length > 0) {
       return { next: users, result: { ok: false, error: "Setup already completed" } };
     }
-    const email = input.email.trim().toLowerCase();
-    if (users.some((u) => u.email === email)) {
-      return { next: users, result: { ok: false, error: "A user with this email already exists" } };
+    const username = normalizeUsername(input.username);
+    if (users.some((u) => u.username === username)) {
+      return { next: users, result: { ok: false, error: "This username is already taken" } };
     }
     const user: AdminUser = {
       id: crypto.randomUUID(),
       name: input.name.trim(),
-      email,
+      username,
       role: input.role,
       passwordHash: input.passwordHash,
       pwv: 1,

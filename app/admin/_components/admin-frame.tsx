@@ -91,10 +91,22 @@ function SidebarFooter({ user, onLogout }: { user: AdminSessionUser; onLogout: (
     <div className="px-4 py-4 border-t border-white/10 text-sm">
       <div className="font-medium truncate">{user.name}</div>
       <div className="text-xs text-white/50 truncate">
-        {user.email} · {user.role === "admin" ? "Admin" : "Staff"}
+        @{user.username} · {user.role === "admin" ? "Admin" : "Staff"}
       </div>
       <div className="flex gap-4 mt-3 text-xs">
-        <a href="/" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-orange">
+        <a
+          href="/"
+          onClick={(e) => {
+            // On admin.<domain>, "/" is the admin app; the public site lives on the bare domain.
+            if (window.location.hostname.startsWith("admin.")) {
+              e.preventDefault();
+              window.open(`${window.location.protocol}//${window.location.host.replace(/^admin\./, "")}/`, "_blank", "noopener");
+            }
+          }}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white/70 hover:text-orange"
+        >
           View site ↗
         </a>
         <button onClick={onLogout} className="text-white/70 hover:text-orange">

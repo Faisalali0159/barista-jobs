@@ -34,7 +34,7 @@ export default function AccountPage() {
         <Card title="Profile">
           <dl className="text-sm space-y-2">
             <div><dt className="inline text-[var(--gray-400)]">Name: </dt><dd className="inline font-medium text-navy">{user.name}</dd></div>
-            <div><dt className="inline text-[var(--gray-400)]">Email: </dt><dd className="inline font-medium text-navy">{user.email}</dd></div>
+            <div><dt className="inline text-[var(--gray-400)]">Username: </dt><dd className="inline font-medium text-navy">{user.username}</dd></div>
             <div><dt className="inline text-[var(--gray-400)]">Role: </dt><dd className="inline font-medium text-navy capitalize">{user.role}</dd></div>
           </dl>
         </Card>

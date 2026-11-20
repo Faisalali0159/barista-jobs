@@ -18,7 +18,7 @@ import {
 interface TeamUser {
   id: string;
   name: string;
-  email: string;
+  username: string;
   role: "admin" | "staff";
   active: boolean;
   createdAt: string;
@@ -111,8 +111,8 @@ export default function UsersPage() {
               <Field label="Full name">
                 <input name="name" required className={inputCls} />
               </Field>
-              <Field label="Email">
-                <input name="email" type="email" required className={inputCls} />
+              <Field label="Username" hint="3-32 letters, numbers, dots, dashes or underscores">
+                <input name="username" required minLength={3} maxLength={32} autoCapitalize="none" className={inputCls} />
               </Field>
               <Field label="Temporary password" hint="At least 8 characters. Share it securely.">
                 <input name="password" type="password" required minLength={8} autoComplete="new-password" className={inputCls} />
@@ -143,7 +143,7 @@ export default function UsersPage() {
                       {u.name} {self && <span className="text-xs text-[var(--gray-400)]">(you)</span>}
                       {!u.active && <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Disabled</span>}
                     </div>
-                    <div className="text-sm text-[var(--gray-500)] truncate">{u.email}</div>
+                    <div className="text-sm text-[var(--gray-500)] truncate">@{u.username}</div>
                     <div className="text-xs text-[var(--gray-400)]">
                       {u.lastLoginAt ? `Last sign-in ${formatDate(u.lastLoginAt)}` : "Never signed in"}
                     </div>
